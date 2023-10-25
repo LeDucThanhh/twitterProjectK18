@@ -1,6 +1,8 @@
+import { error } from 'console'
 import { Request, Response, NextFunction } from 'express'
 import { body, validationResult, ValidationChain } from 'express-validator'
 import { RunnableValidationChains } from 'express-validator/src/middlewares/schema'
+import { EntityError, ErrorWithStatus } from '~/models/Errors'
 // can be reused by many routes
 
 // sequential processing, stops running validations chain if the previous one fails.
@@ -12,7 +14,16 @@ export const validate = (validation: RunnableValidationChains<ValidationChain>) 
     if (errors.isEmpty()) {
       return next()
     }
-
-    res.status(400).json({ errors: errors.mapped() })
+    const errorObject = errors.mapped()
+    const entityError = new EntityError({ errors: {} }) //entityError dùng để thay thế errorObject
+    for (const key in errorObject) {
+      // lấy msg của phần lỗi ra
+      const { msg } = errorObject[key]
+      if (msg instanceof ErrorWithStatus && msg.status !== 422) {
+        return next(msg)
+      }
+      entityError.errors[key] = msg
+    }
+    next(entityError)
   }
 }
