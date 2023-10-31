@@ -9,7 +9,7 @@ type ErrorsType = Record<
   }
 >
 
-// cái khuôn dùng để tạo ra các object mô tả lỗi có status
+//cái khuôn dùng để tạo ra object mô tả lỗi có status
 export class ErrorWithStatus {
   message: string
   status: number
